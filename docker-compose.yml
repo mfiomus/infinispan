@@ -1,0 +1,52 @@
+services:
+  infs1: &infini-server
+    environment:
+      DATACENTER: "dc1"
+    image: infinispan/server:15.0.21.Final
+    hostname: infs1
+    ports:
+      - 7800:7800
+      - 11222:11222
+      - 11223:11223
+    networks:
+      demo-net:
+        ipv4_address: 172.18.0.11
+    volumes:
+      - ./config.d/infinispan.xml:/opt/infinispan/server/conf/infinispan.xml
+      - ./config.d/jgroups-auth.xml:/opt/infinispan/server/conf/jgroups-auth.xml
+    command:
+      - --cluster-name=infini-cluster
+      - --node-name=${HOSTNAME}
+      - --server-config=/opt/infinispan/server/conf/infinispan.xml
+      - --bind-address=0.0.0.0
+
+  infs2:
+    <<: *infini-server
+    hostname: infs2
+    ports:
+      - 7801:7800
+      - 11232:11222
+      - 11233:11223
+    networks:
+      demo-net:
+        ipv4_address: 172.18.0.12
+
+  infs3:
+    <<: *infini-server
+    hostname: infs3
+    ports:
+      - 7802:7800
+      - 11242:11222
+      - 11243:11223
+    networks:
+      demo-net:
+        ipv4_address: 172.18.0.13
+    volumes:
+      - ./config.d/infinispan-fail.xml:/opt/infinispan/server/conf/infinispan.xml
+      - ./config.d/jgroups-auth-fail.xml:/opt/infinispan/server/conf/jgroups-auth-fail.xml
+
+networks:
+  demo-net:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
