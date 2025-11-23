@@ -1,0 +1,19 @@
+<config>
+    <TCP bind_port="7800"/>
+
+    <AUTH auth_class="org.jgroups.auth.FixedTokenAuth">
+        <token>38534d0e2c6c8291fea725425974ccd89951</token>
+    </AUTH>
+
+    <TCPPING initial_hosts="172.18.0.11[7800],172.18.0.12[7800]" port_range="0"/>
+
+    <MERGE3 />
+    <FD_SOCK />
+    <FD />
+    <VERIFY_SUSPECT />
+    <BARRIER />
+    <pbcast.NAKACK2 />
+    <UNICAST3 />
+    <pbcast.STABLE />
+    <pbcast.GMS />
+</config>
