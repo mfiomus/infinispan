@@ -1,0 +1,46 @@
+<server xmlns="urn:infinispan:server:15.0">
+
+    <interfaces>
+        <interface name="public">
+            <inet-address value="0.0.0.0"/>
+        </interface>
+    </interfaces>
+
+    <socket-bindings default-interface="public" port-offset="0">
+        <socket-binding name="default" port="11222"/>
+    </socket-bindings>
+
+    <endpoints>
+        <hotrod-connector socket-binding="default"/>
+        <rest-connector socket-binding="default"/>
+    </endpoints>
+
+    <caches xmlns="urn:infinispan:config:15.0">
+        <cluster-cache-container name="cluster" statistics="true">
+            <transport cluster="infini-cluster" stack="auth-stack"/>
+        </cluster-cache-container>
+    </caches>
+
+    <jgroups xmlns="urn:infinispan:server:jgroups:15.0">
+        <stack name="auth-stack">
+            <TCP bind_port="7800"/>
+
+            <AUTH auth_class="org.jgroups.auth.FixedTokenAuth"
+                  token="38534d0e2c6c8291fea725425974ccd89951"/>
+
+            <TCPPING initial_hosts="172.18.0.11[7800],172.18.0.12[7800]"
+                     port_range="0"/>
+
+            <MERGE3/>
+            <FD_SOCK/>
+            <FD/>
+            <VERIFY_SUSPECT/>
+            <BARRIER/>
+            <pbcast.NAKACK2/>
+            <UNICAST3/>
+            <pbcast.STABLE/>
+            <pbcast.GMS/>
+        </stack>
+    </jgroups>
+
+</server>
