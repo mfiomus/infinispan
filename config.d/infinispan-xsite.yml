@@ -1,0 +1,147 @@
+infinispan:
+  cacheContainer:
+    name: default
+    statistics: true
+    transport:
+      cluster: ${env.CLUSTER}
+      node-name: ${env.HOSTNAME}
+      stack: xsite
+      site: ${env.DATACENTER}
+    security:
+      authorization: {}
+    serialization:
+      marshaller: org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller
+      allow-list:
+        class:
+          - "org.*"
+        regex:
+          - ".*"
+    caches:
+      eu-customers:
+        distributedCache:
+          backups:
+            dc2:
+              backup:
+                strategy: SYNC
+                stateTransfer:
+                  chunkSize: "600"
+                  timeout: "240000"
+                  maxRetries: "30"
+                  waitTime: "2000"
+                  mode: "MANUAL"
+      work:
+        replicatedCache:
+          encoding:
+            mediaType: application/x-protostream
+      sessions:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+      authenticationSessions:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+      clientSessions:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+      offlineSessions:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+      offlineClientSessions:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+      actionTokens:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+      loginFailures:
+        distributedCache:
+          encoding:
+            media-type: application/x-protostream
+  server:
+    endpoints:
+    - connectors:
+        hotrod:
+          hotrodConnector: null
+        rest:
+          restConnector: null
+      securityRealm: default
+      socketBinding: default
+    - connectors:
+        rest:
+          restConnector:
+            authentication:
+              mechanisms: ["BASIC"]
+      securityRealm: default
+      socketBinding: default
+    interfaces:
+    - inetAddress:
+        value: ${infinispan.bind.address:127.0.0.1}
+      name: public
+    security:
+      credentialStores:
+      - clearTextCredential:
+          clearText: secret
+        name: credentials
+        path: credentials.pfx
+      securityRealms:
+      - name: default
+        propertiesRealm:
+          groupProperties:
+            path: groups.properties
+          groupsAttribute: Roles
+          userProperties:
+            path: users.properties
+      - name: metrics
+    socketBindings:
+      defaultInterface: public
+      portOffset: ${infinispan.socket.binding.port-offset:0}
+      socketBinding:
+      - name: default
+        port: 11222
+      - name: metrics
+        port: 11223
+  jgroups:
+    stacks:
+      prod:
+        stack:
+          extends: tcp
+          TCP:
+            bind-port: 7800
+          TCPPING:
+            initial_hosts: 172.20.0.11[7800],172.20.0.12[7800]
+            port_range: 0 
+            stack.combine: "REPLACE"
+            stack.position: "MPING"
+          VERIFY_SUSPECT:
+            timeout: 6000
+      bridge:
+        stack:
+          extends: tcp
+          TCP:
+            bind-port: 7900
+          TCPPING:
+            initial_hosts: "127.0.0.1[7900]"
+            stack.combine: "REPLACE"
+            stack.position: "MPING"
+      xsite:
+        stack:
+          extends: tcp
+          relay.RELAY2:
+            site: ${env.DATACENTER}
+            maxSiteMasters: 10
+          remoteSites:
+            defaultStack: "bridge"
+            remoteSite:
+              name: dc1
+      # SYM_ENCRYPT:
+      #   keystore_name: /opt/infinispan/server/cluster-dc1.p12
+      #   keystore_type: PKCS12
+      #   store_password: changeit
+      #   key_password: changeit
+      #   alias: cluster-dc1
+      #   stack.combine: INSERT_AFTER
+      #   stack.position: VERIFY_SUSPECT2
