@@ -73,8 +73,8 @@ infinispan:
     - connectors:
         rest:
           restConnector:
-            authentication:
-              mechanisms: ["BASIC"]
+            # authentication:
+            #   mechanisms: ["BASIC"]
       securityRealm: default
       socketBinding: default
     interfaces:
