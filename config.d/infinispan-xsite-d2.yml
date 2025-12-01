@@ -5,7 +5,7 @@ infinispan:
     transport:
       cluster: ${env.CLUSTER}
       node-name: ${env.HOSTNAME}
-      stack: xsite
+      stack: cross_site
       site: ${env.DATACENTER}
     security:
       authorization: {}
@@ -19,16 +19,18 @@ infinispan:
     caches:
       eu-customers:
         distributedCache:
+          encoding:
+            mediaType: application/x-protostream
           backups:
             dc2:
               backup:
-                strategy: SYNC
+                strategy: ASYNC
                 stateTransfer:
                   chunkSize: "600"
                   timeout: "240000"
                   maxRetries: "30"
                   waitTime: "2000"
-                  mode: "MANUAL"
+                  mode: "AUTO"
       work:
         replicatedCache:
           encoding:
@@ -112,31 +114,33 @@ infinispan:
           TCP:
             bind-port: 7800
           TCPPING:
-            initial_hosts: 172.30.0.11[7800],172.30.0.12[7800]
+            initial_hosts: "172.20.0.21[7800],172.20.0.22[7800]"
             port_range: 0 
             stack.combine: "REPLACE"
             stack.position: "MPING"
           VERIFY_SUSPECT:
             timeout: 6000
-      bridge:
+      global_bridge:
         stack:
           extends: tcp
           TCP:
             bind-port: 7900
           TCPPING:
-            initial_hosts: "127.0.0.1[7900]"
+            initial_hosts: "172.20.0.11[7900],172.20.0.12[7900]"
             stack.combine: "REPLACE"
             stack.position: "MPING"
-      xsite:
+      cross_site:
         stack:
           extends: tcp
           relay.RELAY2:
             site: ${env.DATACENTER}
             maxSiteMasters: 10
           remoteSites:
-            defaultStack: "bridge"
+            defaultStack: "global_bridge"
             remoteSite:
               name: dc2
+            remoteSite:
+              name: dc1
       # SYM_ENCRYPT:
       #   keystore_name: /opt/infinispan/server/cluster-dc1.p12
       #   keystore_type: PKCS12
